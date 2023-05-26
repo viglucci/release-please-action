@@ -58,8 +58,8 @@ async function runManifest (command) {
     core.debug(`using releaseAs override: ${releaseAs}`)
   }
   const skipGithubRelease = core.getInput('skip-github-release') || undefined
-  if (releaseAs) {
-    core.debug(`using releaseAs override: ${releaseAs}`)
+  if (skipGithubRelease) {
+    core.debug(`using skipGithubRelease override: ${skipGithubRelease}`)
   }
   core.debug(`running manifest using configFile: ${manifestOpts.configFile}`)
   core.debug(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
