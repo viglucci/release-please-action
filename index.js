@@ -165,54 +165,62 @@ async function manifestInstance (github) {
   const groupPullRequestTitlePattern = core.getInput('group-pull-request-title-pattern') || undefined
   const releaseSearchDepth = core.getInput('release-search-depth') || undefined
   const commitSearchDepth = core.getInput('commit-search-depth') || undefined
+
+  const manifestConfig = {
+    bumpMinorPreMajor,
+    bumpPatchForMinorPreMajor,
+    packageName,
+    releaseType,
+    changelogPath,
+    changelogHost,
+    changelogSections,
+    versionFile,
+    extraFiles,
+    includeComponentInTag: monorepoTags,
+    pullRequestTitlePattern,
+    pullRequestHeader,
+    draftPullRequest,
+    versioning,
+    releaseAs,
+    skipGithubRelease,
+    draft,
+    prerelease,
+    component,
+    includeVInTag,
+    tagSeparator,
+    changelogType,
+    snapshotLabels
+  }
+
+  const manifestOptions = {
+    draft,
+    signoff,
+    fork,
+    draftPullRequest,
+    bootstrapSha,
+    lastReleaseSha,
+    alwaysLinkLocal,
+    separatePullRequests,
+    plugins,
+    labels,
+    releaseLabels,
+    snapshotLabels,
+    skipLabeling,
+    sequentialCalls,
+    prerelease,
+    groupPullRequestTitlePattern,
+    releaseSearchDepth,
+    commitSearchDepth
+  }
+
+  core.debug(`Manifest Config: ${JSON.stringify(manifestConfig)}`)
+  core.debug(`Manifest Options: ${JSON.stringify(manifestOptions)}`)
+
   return await Manifest.fromConfig(
     github,
     github.repository.defaultBranch,
-    {
-      bumpMinorPreMajor,
-      bumpPatchForMinorPreMajor,
-      packageName,
-      releaseType,
-      changelogPath,
-      changelogHost,
-      changelogSections,
-      versionFile,
-      extraFiles,
-      includeComponentInTag: monorepoTags,
-      pullRequestTitlePattern,
-      pullRequestHeader,
-      draftPullRequest,
-      versioning,
-      releaseAs,
-      skipGithubRelease,
-      draft,
-      prerelease,
-      component,
-      includeVInTag,
-      tagSeparator,
-      changelogType,
-      snapshotLabels
-    },
-    {
-      draft,
-      signoff,
-      fork,
-      draftPullRequest,
-      bootstrapSha,
-      lastReleaseSha,
-      alwaysLinkLocal,
-      separatePullRequests,
-      plugins,
-      labels,
-      releaseLabels,
-      snapshotLabels,
-      skipLabeling,
-      sequentialCalls,
-      prerelease,
-      groupPullRequestTitlePattern,
-      releaseSearchDepth,
-      commitSearchDepth
-    },
+    manifestConfig,
+    manifestOptions,
     path
   )
 }
