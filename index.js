@@ -49,11 +49,20 @@ function getManifestInput () {
 async function runManifest (command) {
   // Create the Manifest and GitHub instance from
   // argument provided to GitHub action:
+  core.info('Running via manifest')
   const { fork } = getGitHubInput()
   const manifestOpts = getManifestInput()
   const github = await getGitHubInstance()
-  core.info(`running manifest using configFile: ${manifestOpts.configFile}`)
-  core.info(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
+  const releaseAs = core.getInput('release-as') || undefined
+  if (releaseAs) {
+    core.debug(`using releaseAs override: ${releaseAs}`)
+  }
+  const skipGithubRelease = core.getInput('skip-github-release') || undefined
+  if (releaseAs) {
+    core.debug(`using releaseAs override: ${releaseAs}`)
+  }
+  core.debug(`running manifest using configFile: ${manifestOpts.configFile}`)
+  core.debug(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
   let manifest = await Manifest.fromManifest(
     github,
     github.repository.defaultBranch,
@@ -61,8 +70,11 @@ async function runManifest (command) {
     manifestOpts.manifestFile,
     {
       signoff,
-      fork
-    }
+      fork,
+      skipGithubRelease
+    },
+    undefined,
+    releaseAs
   )
   if (command !== 'manifest-pr') {
     outputReleases(await manifest.createReleases())
@@ -83,9 +95,8 @@ async function runManifest (command) {
 
 async function main () {
   const command = core.getInput('command') || undefined
-  core.info(`Running command ${command}`)
+  core.debug(`Running command "${command}"`)
   if (MANIFEST_COMMANDS.includes(command)) {
-    core.info(`${command} is a manifest command`)
     return await runManifest(command)
   }
   const github = await getGitHubInstance()
@@ -170,61 +181,54 @@ async function manifestInstance (github) {
   const releaseSearchDepth = core.getInput('release-search-depth') || undefined
   const commitSearchDepth = core.getInput('commit-search-depth') || undefined
 
-  const manifestConfig = {
-    bumpMinorPreMajor,
-    bumpPatchForMinorPreMajor,
-    packageName,
-    releaseType,
-    changelogPath,
-    changelogHost,
-    changelogSections,
-    versionFile,
-    extraFiles,
-    includeComponentInTag: monorepoTags,
-    pullRequestTitlePattern,
-    pullRequestHeader,
-    draftPullRequest,
-    versioning,
-    releaseAs,
-    skipGithubRelease,
-    draft,
-    prerelease,
-    component,
-    includeVInTag,
-    tagSeparator,
-    changelogType,
-    snapshotLabels
-  }
-
-  const manifestOptions = {
-    draft,
-    signoff,
-    fork,
-    draftPullRequest,
-    bootstrapSha,
-    lastReleaseSha,
-    alwaysLinkLocal,
-    separatePullRequests,
-    plugins,
-    labels,
-    releaseLabels,
-    snapshotLabels,
-    skipLabeling,
-    sequentialCalls,
-    prerelease,
-    groupPullRequestTitlePattern,
-    releaseSearchDepth,
-    commitSearchDepth
-  }
-
-  console.log(`Manifest Config: ${JSON.stringify(manifestConfig)}`)
-  console.log(`Manifest Options: ${JSON.stringify(manifestOptions)}`)
-
   return await Manifest.fromConfig(
     github,
     github.repository.defaultBranch,
-    manifestConfig,
-    manifestOptions,
+    {
+      bumpMinorPreMajor,
+      bumpPatchForMinorPreMajor,
+      packageName,
+      releaseType,
+      changelogPath,
+      changelogHost,
+      changelogSections,
+      versionFile,
+      extraFiles,
+      includeComponentInTag: monorepoTags,
+      pullRequestTitlePattern,
+      pullRequestHeader,
+      draftPullRequest,
+      versioning,
+      releaseAs,
+      skipGithubRelease,
+      draft,
+      prerelease,
+      component,
+      includeVInTag,
+      tagSeparator,
+      changelogType,
+      snapshotLabels
+    },
+    {
+      draft,
+      signoff,
+      fork,
+      draftPullRequest,
+      bootstrapSha,
+      lastReleaseSha,
+      alwaysLinkLocal,
+      separatePullRequests,
+      plugins,
+      labels,
+      releaseLabels,
+      snapshotLabels,
+      skipLabeling,
+      sequentialCalls,
+      prerelease,
+      groupPullRequestTitlePattern,
+      releaseSearchDepth,
+      commitSearchDepth
+    },
     path
   )
 }
