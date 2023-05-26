@@ -39,9 +39,30 @@ function getOptionalMultilineInput (name) {
 }
 
 function getManifestInput () {
+  const path = core.getInput('path') || undefined
+  if (path) {
+    core.debug(`using path override: ${path}`)
+  }
+  const releaseAs = core.getInput('release-as') || undefined
+  if (releaseAs && !path) {
+    core.warning(`releaseAs override provided without path input, release-please may ignore this value: ${releaseAs}`)
+  } else if (releaseAs) {
+    core.debug(`using releaseAs override: ${releaseAs}`)
+  }
+  const skipGithubRelease = core.getInput('skip-github-release') || undefined
+  if (skipGithubRelease) {
+    core.debug(`using skipGithubRelease override: ${skipGithubRelease}`)
+  }
+  const configFile = core.getInput('config-file') || CONFIG_FILE
+  const manifestFile = core.getInput('manifest-file') || MANIFEST_FILE
+  core.debug(`using configFile: ${configFile}`)
+  core.debug(`using manifestFile: ${manifestFile}`)
   return {
-    configFile: core.getInput('config-file') || CONFIG_FILE,
-    manifestFile: core.getInput('manifest-file') || MANIFEST_FILE,
+    configFile,
+    manifestFile,
+    skipGithubRelease,
+    releaseAs,
+    path,
     signoff
   }
 }
@@ -49,20 +70,9 @@ function getManifestInput () {
 async function runManifest (command) {
   // Create the Manifest and GitHub instance from
   // argument provided to GitHub action:
-  core.info('Running via manifest')
   const { fork } = getGitHubInput()
   const manifestOpts = getManifestInput()
   const github = await getGitHubInstance()
-  const releaseAs = core.getInput('release-as') || undefined
-  if (releaseAs) {
-    core.debug(`using releaseAs override: ${releaseAs}`)
-  }
-  const skipGithubRelease = core.getInput('skip-github-release') || undefined
-  if (skipGithubRelease) {
-    core.debug(`using skipGithubRelease override: ${skipGithubRelease}`)
-  }
-  core.debug(`running manifest using configFile: ${manifestOpts.configFile}`)
-  core.debug(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
   let manifest = await Manifest.fromManifest(
     github,
     github.repository.defaultBranch,
@@ -71,10 +81,10 @@ async function runManifest (command) {
     {
       signoff,
       fork,
-      skipGithubRelease
+      skipGithubRelease: manifestOpts.skipGithubRelease
     },
-    undefined,
-    releaseAs
+    manifestOpts.path,
+    manifestOpts.releaseAs
   )
   if (command !== 'manifest-pr') {
     outputReleases(await manifest.createReleases())
