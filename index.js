@@ -213,8 +213,8 @@ async function manifestInstance (github) {
     commitSearchDepth
   }
 
-  core.debug(`Manifest Config: ${JSON.stringify(manifestConfig)}`)
-  core.debug(`Manifest Options: ${JSON.stringify(manifestOptions)}`)
+  console.log(`Manifest Config: ${JSON.stringify(manifestConfig)}`)
+  console.log(`Manifest Options: ${JSON.stringify(manifestOptions)}`)
 
   return await Manifest.fromConfig(
     github,
