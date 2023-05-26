@@ -52,8 +52,8 @@ async function runManifest (command) {
   const { fork } = getGitHubInput()
   const manifestOpts = getManifestInput()
   const github = await getGitHubInstance()
-  core.debug(`running manifest using configFile: ${manifestOpts.configFile}`)
-  core.debug(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
+  core.info(`running manifest using configFile: ${manifestOpts.configFile}`)
+  core.info(`running manifest using manifestFile: ${manifestOpts.manifestFile}`)
   let manifest = await Manifest.fromManifest(
     github,
     github.repository.defaultBranch,
@@ -83,9 +83,9 @@ async function runManifest (command) {
 
 async function main () {
   const command = core.getInput('command') || undefined
-  core.debug(`Running command ${command}`)
+  core.info(`Running command ${command}`)
   if (MANIFEST_COMMANDS.includes(command)) {
-    core.debug(`${command} is a manifest command`)
+    core.info(`${command} is a manifest command`)
     return await runManifest(command)
   }
   const github = await getGitHubInstance()
